@@ -11,6 +11,8 @@ defmodule Identicon do
     |> grid_image
     |> filter_grid_image
     |> pixel_image
+    |> draw_image
+    |> save_image(input)
   end
 
   def hash_input(input) do
@@ -57,11 +59,26 @@ defmodule Identicon do
     pixel_map = Enum.map grid, fn({_code, index}) ->
       x = rem(index, 5) * 50
       y = div(index, 5) * 50
-      top_left = {x, y}
-      bottom_right = {x + 50, y + 50}
-      {top_left, bottom_right}
+      start = {x, y}
+      stop = {x + 50, y + 50}
+      {start, stop}
     end
 
     %Identicon.Image{image | pixel_map: pixel_map}
+  end
+
+  def draw_image(%Identicon.Image{color: color, pixel_map: pixel_map}) do
+    egd_image = :egd.create(250, 250)
+    egd_color = :egd.color(color)
+
+    Enum.each pixel_map, fn({start, stop}) ->
+      :egd.filledRectangle(egd_image, start, stop, egd_color)
+    end
+
+    :egd.render(egd_image)
+  end
+
+  def save_image(egd_image, input) do
+    File.write("tmp/#{input}.png", egd_image)
   end
 end
