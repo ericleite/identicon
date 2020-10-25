@@ -10,6 +10,7 @@ defmodule Identicon do
     |> color_image
     |> grid_image
     |> filter_grid_image
+    |> pixel_image
   end
 
   def hash_input(input) do
@@ -48,5 +49,19 @@ defmodule Identicon do
       rem(code, 2) == 0
     end
     %Identicon.Image{image | grid: filtered_grid}
+  end
+
+  def pixel_image(image) do
+    %Identicon.Image{grid: grid} = image
+
+    pixel_map = Enum.map grid, fn({_code, index}) ->
+      x = rem(index, 5) * 50
+      y = div(index, 5) * 50
+      top_left = {x, y}
+      bottom_right = {x + 50, y + 50}
+      {top_left, bottom_right}
+    end
+
+    %Identicon.Image{image | pixel_map: pixel_map}
   end
 end
